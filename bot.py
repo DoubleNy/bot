@@ -1,11 +1,7 @@
 import logging
 import requests
-import locale
-
+import math
 import telegram
-
-locale.setlocale(locale.LC_ALL, 'en_AG')
-
 
 from telegram.ext import Updater, CommandHandler
 
@@ -15,6 +11,16 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
+
+
+millnames = ['',' Thousand',' Million',' Billion',' Trillion']
+
+def millify(n):
+    n = float(n)
+    millidx = max(0,min(len(millnames)-1,
+                        int(math.floor(0 if n == 0 else math.log10(abs(n))/3))))
+
+    return '{:.0f}{}'.format(n / 10**(3 * millidx), millnames[millidx])
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
@@ -37,10 +43,10 @@ def price(update, context):
 
     name = response['data']['name']
     price = float(response['data']['price']) * 1e6
-    market_cap = round(650 * 1e6 * price)
-    locale_market_cap = locale.format_string("%d", market_cap, grouping=True)
+    mcapp = round(650 * 1e6 * price)
+    market_cap = "{:,}".format(mcapp)
 
-    update.message.reply_text(text=f"  🚀   {name}   🚀\n\n💰  1M tokens: <b>${round(price, 8)}</b> \n💴  Market cap: <b>${locale_market_cap}</b>", parse_mode=telegram.ParseMode.HTML)
+    update.message.reply_text(text=f"  🚀   {name}   🚀\n\n💰  1M tokens: <b>${round(price, 8)}</b> \n💴  Market cap: <b>${market_cap}</b> <i>({millify(mcapp)})</i>", parse_mode=telegram.ParseMode.HTML)
     # update.message.reply_text(f"🚀 {name} 🚀\n\n💰  1M tokens: ${round(price, 8)} \n💴  Market cap: ${locale_market_cap}")
 
 
