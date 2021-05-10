@@ -4,8 +4,7 @@ import locale
 
 import telegram
 
-locale.setlocale(locale.LC_ALL, 'en_US')
-'en_US'
+locale.setlocale(locale.LC_ALL, 'en_AG')
 
 
 from telegram.ext import Updater, CommandHandler
