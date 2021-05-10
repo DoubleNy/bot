@@ -1,7 +1,14 @@
 import logging
 import requests
+import locale
 
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+import telegram
+
+locale.setlocale(locale.LC_ALL, 'en_US')
+'en_US'
+
+
+from telegram.ext import Updater, CommandHandler
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -32,8 +39,10 @@ def price(update, context):
     name = response['data']['name']
     price = float(response['data']['price']) * 1e6
     market_cap = round(650 * 1e6 * price)
+    locale_market_cap = locale.format_string("%d", market_cap, grouping=True)
 
-    update.message.reply_text(f"🚀 {name} 🚀\n\n💰  1M tokens: ${round(price, 8)} \n💴  Market cap: ${market_cap}")
+    update.message.reply_text(text=f"  🚀   {name}   🚀\n\n💰  1M tokens: <b>${round(price, 8)}</b> \n💴  Market cap: <b>${locale_market_cap}</b>", parse_mode=telegram.ParseMode.HTML)
+    # update.message.reply_text(f"🚀 {name} 🚀\n\n💰  1M tokens: ${round(price, 8)} \n💴  Market cap: ${locale_market_cap}")
 
 
 def error(update, context):
