@@ -33,7 +33,7 @@ def price(update, context):
     price = float(response['data']['price']) * 1e6
     market_cap = round(650 * 1e6 * price)
 
-    update.message.reply_text(f"🚀 {name} 🚀\n\n💰  1M tokens = ${price} \n💴  Market Cap ${market_cap}")
+    update.message.reply_text(f"🚀 {name} 🚀\n\n💰  1M tokens = ${round(price, 6)} \n💴  Market Cap ${market_cap}")
 
 
 def echo(update, context):
