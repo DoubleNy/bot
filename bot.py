@@ -95,8 +95,8 @@ def price(update, context):
     p_mcapp = round(651.4 * 1e6 * p_price)
     p_market_cap = "{:,}".format(p_mcapp)
 
-    b_price = p_price - (p_price / 100 * 8)
-    b_mcapp = round(p_mcapp - (p_mcapp / 100 * 8))
+    b_price = p_price - (p_price / 100 * 19)
+    b_mcapp = round(p_mcapp - (p_mcapp / 100 * 19))
     b_market_cap = "{:,}".format(b_mcapp)
 
     change, sign = update_hour(b_price)
