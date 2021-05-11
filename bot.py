@@ -26,16 +26,17 @@ def millify(n):
 # context. Error handlers also receive the raised TelegramError object in error.
 def start(update, context):
     """Send a message when the command /start is issued."""
-    update.message.reply_text('Hey this is your bot!')
+    update.message.reply_text('Hey this is your bot, Uncle Space Bot!\n'
+                              'I am glad to serve you with most updated info.')
 
 
 def help(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('Currently I am in Alpha stage, help me also!')
-
-def piracy(update, context):
-    update.message.reply_text('Ahhan, FBI wants to know your location!')
-
+    update.message.reply_text(text='<b>/p</b> or <b>/price</b> shows the price for SAFESPACE from pancakeSwap & boggedFinance.\n'
+                              '<b>/p_bogged</b> or <b>/price_bogged</b> shows the price for SAFESPACE from boggedFinance\n'
+                              '<b>/p_pancake</b> or <b>/price_pancake</b> shows the price for SAFESPACE from pancakeSwap\n'
+                              '<b>/help</b> helps you in finding the commands supported by the bot\n', parse_mode=telegram.ParseMode.HTML
+                              )
 def price(update, context):
     r = requests.get(url="https://api.pancakeswap.info/api/v2/tokens/0xe1DB3d1eE5CfE5C6333BE96e6421f9Bd5b85c987")
 
@@ -60,6 +61,41 @@ def price(update, context):
                                    f"", parse_mode=telegram.ParseMode.HTML)
 
 
+def priceB(update, context):
+    r = requests.get(url="https://api.pancakeswap.info/api/v2/tokens/0xe1DB3d1eE5CfE5C6333BE96e6421f9Bd5b85c987")
+
+    response = r.json()
+
+    name = response['data']['name']
+    p_price = float(response['data']['price']) * 1e6
+    p_mcapp = round(650 * 1e6 * p_price)
+
+    b_price = p_price - (p_price / 100 * 28)
+    b_mcapp = round(p_mcapp - (p_mcapp / 100 * 28))
+    b_market_cap = "{:,}".format(b_mcapp)
+
+    update.message.reply_text(text=f"         🚀   {name}   🚀\n\n"
+                                   f"  ~~   <i>BoggedFinance</i>  ~~  \n"
+                                   f"💰  1M tokens: <b>${round(b_price, 8)}</b> \n"
+                                   f"💴  Market cap: <b>${b_market_cap}</b> <i>({millify(b_mcapp)})</i>\n"
+                                   f"", parse_mode=telegram.ParseMode.HTML)
+
+def priceP(update, context):
+    r = requests.get(url="https://api.pancakeswap.info/api/v2/tokens/0xe1DB3d1eE5CfE5C6333BE96e6421f9Bd5b85c987")
+
+    response = r.json()
+
+    name = response['data']['name']
+    p_price = float(response['data']['price']) * 1e6
+    p_mcapp = round(650 * 1e6 * p_price)
+    p_market_cap = "{:,}".format(p_mcapp)
+
+    update.message.reply_text(text=f"         🚀   {name}   🚀\n\n"
+                                   f"  ~~   <i>Pancakeswap[v2]</i>  ~~  \n"
+                                   f"💰  1M tokens: <b>${round(p_price, 8)}</b> \n"
+                                   f"💴  Market cap: <b>${p_market_cap}</b> <i>({millify(p_mcapp)})</i>\n\n"
+                                   f"", parse_mode=telegram.ParseMode.HTML)
+
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
@@ -78,9 +114,14 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
-    dp.add_handler(CommandHandler("piracy", piracy))
     dp.add_handler(CommandHandler("price", price))
     dp.add_handler(CommandHandler("p", price))
+
+    dp.add_handler(CommandHandler("price_bogged", priceB))
+    dp.add_handler(CommandHandler("p_bogged", priceB))
+
+    dp.add_handler(CommandHandler("price_pancake", priceP))
+    dp.add_handler(CommandHandler("p_pancake", priceP))
     # log all errors
     dp.add_error_handler(error)
 
