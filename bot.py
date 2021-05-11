@@ -1,4 +1,6 @@
 import logging
+import time
+
 import requests
 import math
 import telegram
@@ -10,8 +12,51 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
+limit_time = 0
 
 
+idx = 0
+ticks_update_time = 0
+last_hour_ticks = [0.01029474, 0.01029474, 0.01029474, 0.01029474, 0.01029474, 0.01029474]
+
+def get_change(current, previous):
+    if current == previous:
+        return 0
+    try:
+        return (abs(current - previous) / previous) * 100.0
+    except ZeroDivisionError:
+        return float('inf')
+
+last_change = 'x'
+
+def update_hour(new_value):
+    global ticks_update_time
+    global last_change
+
+    sign = '+'
+
+    if time.time() - ticks_update_time >= 60 * 10:
+        previous = last_hour_ticks[idx]
+
+        if new_value < previous:
+            sign = '-'
+
+        last_hour_ticks.pop(0)
+        last_hour_ticks.append(new_value)
+        ticks_update_time = time.time()
+
+        return get_change(new_value, previous), sign
+    else:
+        if last_change == 'x':
+            last_change = get_change(new_value, last_hour_ticks[0])
+        return last_change, sign
+
+def allow_reply():
+    global limit_time
+
+    current = time.time() - limit_time
+
+    return current >= 30
 
 millnames = ['',' Thousand',' Million',' Billion',' Trillion']
 
@@ -36,6 +81,11 @@ def help(update, context):
                               '<b>/help</b> helps you in finding the commands supported by the bot\n', parse_mode=telegram.ParseMode.HTML
                               )
 def price(update, context):
+    global limit_time
+
+    if not allow_reply():
+        return
+
     r = requests.get(url="https://api.pancakeswap.info/api/v2/tokens/0xe1DB3d1eE5CfE5C6333BE96e6421f9Bd5b85c987")
 
     response = r.json()
@@ -45,14 +95,19 @@ def price(update, context):
     p_mcapp = round(651.4 * 1e6 * p_price)
     p_market_cap = "{:,}".format(p_mcapp)
 
-    # b_price = p_price - (p_price / 100 * 8)
-    # b_mcapp = round(p_mcapp - (p_mcapp / 100 * 8))
-    # b_market_cap = "{:,}".format(b_mcapp)
+    b_price = p_price - (p_price / 100 * 8)
+    b_mcapp = round(p_mcapp - (p_mcapp / 100 * 8))
+    b_market_cap = "{:,}".format(b_mcapp)
 
+    change, sign = update_hour(b_price)
+
+    # print(change, sign)
+    limit_time = time.time()
     update.message.reply_text(text=f"         🚀   {name}   🚀\n\n"
-                                   f"  ~~   <i>Pancakeswap[v2]</i>  ~~  \n"
-                                   f"💰  1M tokens: <b>${round(p_price, 8)}</b> \n"
-                                   f"💴  Market cap: <b>${p_market_cap}</b> <i>({millify(p_mcapp)})</i>\n\n"
+                                   # f"  ~~   <i>Pancakeswap[v2]</i>  ~~  \n"
+                                   f"💰  1M tokens: <b>${round(b_price, 8)}</b><i>({sign}{round(change)}% last hour)</i> \n"
+                                   f"💴  Market cap: <b>${b_market_cap}</b> <i>({millify(b_mcapp)})</i>\n"
+                                   f"📍  See pinned messages to get key info\n\n"
                                    # f"  ~~   <i>BoggedFinance</i>  ~~  \n"
                                    # f"💰  1M tokens: <b>${round(b_price, 8)}</b> \n"
                                    # f"💴  Market cap: <b>${b_market_cap}</b> <i>({millify(b_mcapp)})</i>\n"
@@ -123,6 +178,11 @@ def main():
     # log all errors
     dp.add_error_handler(error)
 
+    global ticks_update_time
+    global limit_time
+
+    ticks_update_time = time.time()
+    limit_time = time.time()
     # Start the Bot
     updater.start_polling()
 
