@@ -42,12 +42,22 @@ def price(update, context):
     response = r.json()
 
     name = response['data']['name']
-    price = float(response['data']['price']) * 1e6
-    mcapp = round(650 * 1e6 * price)
-    market_cap = "{:,}".format(mcapp)
+    p_price = float(response['data']['price']) * 1e6
+    p_mcapp = round(650 * 1e6 * p_price)
+    p_market_cap = "{:,}".format(p_mcapp)
 
-    update.message.reply_text(text=f"  🚀   {name}   🚀\n\n💰  1M tokens: <b>${round(price, 8)}</b> \n💴  Market cap: <b>${market_cap}</b> <i>({millify(mcapp)})</i>", parse_mode=telegram.ParseMode.HTML)
-    # update.message.reply_text(f"🚀 {name} 🚀\n\n💰  1M tokens: ${round(price, 8)} \n💴  Market cap: ${locale_market_cap}")
+    b_price = p_price - (p_price / 100 * 28)
+    b_mcapp = round(p_mcapp - (p_mcapp / 100 * 28))
+    b_market_cap = "{:,}".format(b_mcapp)
+
+    update.message.reply_text(text=f"         🚀   {name}   🚀\n\n"
+                                   f"  ~~   <i>Pancakeswap[v2]</i>  ~~  \n"
+                                   f"💰  1M tokens: <b>${round(p_price, 8)}</b> \n"
+                                   f"💴  Market cap: <b>${p_market_cap}</b> <i>({millify(p_mcapp)})</i>\n\n"
+                                   f"  ~~   <i>BoggedFinance</i>  ~~  \n"
+                                   f"💰  1M tokens: <b>${round(b_price, 8)}</b> \n"
+                                   f"💴  Market cap: <b>${b_market_cap}</b> <i>({millify(b_mcapp)})</i>\n"
+                                   f"", parse_mode=telegram.ParseMode.HTML)
 
 
 def error(update, context):
