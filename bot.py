@@ -106,7 +106,7 @@ def price(update, context):
     update.message.reply_text(text=f"         🚀   {name}   🚀\n\n"
                                    # f"  ~~   <i>Pancakeswap[v2]</i>  ~~  \n"
                                    f"💰  1M tokens: <b>${round(b_price, 8)}</b><i>({sign}{round(change)}% last hour)</i> \n"
-                                   f"💴  Market cap: <b>${b_market_cap}</b> <i>({millify(b_mcapp)})</i>\n"
+                                   f"💴  Market cap: <b>${b_market_cap}</b> \n"
                                    f"📍  See pinned messages to get key info\n\n"
                                    # f"  ~~   <i>BoggedFinance</i>  ~~  \n"
                                    # f"💰  1M tokens: <b>${round(b_price, 8)}</b> \n"
