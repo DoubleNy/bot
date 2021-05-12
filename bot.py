@@ -86,8 +86,8 @@ def help(update, context):
 def price(update, context):
     global limit_time
 
-    # if not allow_reply():
-    #     return
+    if not allow_reply():
+        return
 
     # scraper = cfscrape.create_scraper()  # returns a CloudflareScraper instance
     scraper = cloudscraper.create_scraper()
