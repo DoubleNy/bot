@@ -1,6 +1,9 @@
 import logging
 import time
 
+import cloudscraper
+import json
+
 import requests
 import math
 import telegram
@@ -83,35 +86,66 @@ def help(update, context):
 def price(update, context):
     global limit_time
 
-    if not allow_reply():
-        return
+    # if not allow_reply():
+    #     return
+
+    # scraper = cfscrape.create_scraper()  # returns a CloudflareScraper instance
+    scraper = cloudscraper.create_scraper()
 
     r = requests.get(url="https://api.pancakeswap.info/api/v2/tokens/0xe1DB3d1eE5CfE5C6333BE96e6421f9Bd5b85c987")
-
     response = r.json()
 
-    name = response['data']['name']
-    p_price = float(response['data']['price']) * 1e6
-    p_mcapp = round(651.4 * 1e6 * p_price)
-    p_market_cap = "{:,}".format(p_mcapp)
+    name = ''
+    price = 0
+    mcapp = 0
+    formatted_market_cap = 0
+    transactions_count = 0
+    transactions_change = 0
+    volume_usd = 0
+    volume_change = 0
+    price_usd = 0
+    price_change = 0
+    err = False
 
-    b_price = p_price - (p_price / 100 * 19)
-    b_mcapp = round(p_mcapp - (p_mcapp / 100 * 19))
-    b_market_cap = "{:,}".format(b_mcapp)
+    try:
+        resJson = json.loads(scraper.get("https://api.dex.guru/v1/tokens/0xe1DB3d1eE5CfE5C6333BE96e6421f9Bd5b85c987").text)
+        print(resJson)
+        name = resJson['symbol']
+        transactions_count = resJson['txns24h']
+        transactions_change = resJson['txns24hChange']
+        volume_usd = resJson['volume24hUSD']
+        volume_change = resJson['volumeChange24h']
+        price = float(resJson['priceUSD'] * 1e6)
+        price_change = resJson['priceChange24h']
 
-    change, sign = update_hour(b_price)
+        mcapp = round(651.4 * 1e6 * price)
+        formatted_market_cap = "{:,}".format(mcapp)
 
-    # print(change, sign)
+    except:
+        err = True
+        print("error")
+        name = response['data']['name']
+        price = float(response['data']['price']) * 1e6
+        mcapp = round(651.4 * 1e6 * price)
+        formatted_market_cap = "{:,}".format(mcapp)
+
+
     limit_time = time.time()
-    update.message.reply_text(text=f"         🚀   {name}   🚀\n\n"
-                                   # f"  ~~   <i>Pancakeswap[v2]</i>  ~~  \n"
-                                   f"💰  1M tokens: <b>${round(p_price, 8)}</b><i>({sign}{round(change)}% last hour)</i> \n"
-                                   f"💴  Market cap: <b>${p_market_cap}</b> \n"
+
+    if err:
+        update.message.reply_text(text=f"         🚀   {name}   🚀\n\n"
+                                   f"💰  1M tokens: <b>${round(price, 8)}</b><i>({round(price_change * 100)}% last 24h)</i> \n"
+                                   f"💴  Market cap: <b>${formatted_market_cap}</b> \n"
                                    f"📍  See pinned messages to get key info\n\n"
-                                   # f"  ~~   <i>BoggedFinance</i>  ~~  \n"
-                                   # f"💰  1M tokens: <b>${round(b_price, 8)}</b> \n"
-                                   # f"💴  Market cap: <b>${b_market_cap}</b> <i>({millify(b_mcapp)})</i>\n"
                                    f"", parse_mode=telegram.ParseMode.HTML)
+    else:
+        update.message.reply_text(text=f"         🚀   {name}   🚀\n\n"
+                                           f"💰  1M tokens: <b>${round(price, 8)}</b><i>({round(price_change * 100)}% last 24h)</i> \n"
+                                           f"💴  Market cap: <b>${formatted_market_cap}</b> \n"
+                                           f"🎖 Transactions count: <b>{transactions_count}</b><i>({round(transactions_change * 100)}% last 24h)</i>\n"
+                                           f"👥  Volume(USD): <b>${round(volume_usd, 2)}</b><i>({round(volume_change * 100)}% last 24h)</i>\n"
+                                           f"📍  See pinned messages to get key info\n\n"
+                                           f"", parse_mode=telegram.ParseMode.HTML)
 
 
 # def priceB(update, context):

@@ -4,3 +4,4 @@ tornado>=5.1
 cryptography
 python-telegram-bot
 requests~=2.25.1
+cloudscraper~=1.2.58
