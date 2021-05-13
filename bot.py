@@ -42,7 +42,7 @@ def allow_reply():
 
     current = time.time() - limit_time
 
-    return current >= 30
+    return current >= 45
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
@@ -64,7 +64,7 @@ def tm_time(update, context):
 
     if not allow_reply():
         time = get_reply_time()
-        update.message.reply_text(text=f'Bot will be released in <b>{round(30 - time,2)}</b> <i>sec.</i>', parse_mode=telegram.ParseMode.HTML)
+        update.message.reply_text(text=f'Bot will be released in <b>{round(45 - time,1)}</b> <i>sec.</i>', parse_mode=telegram.ParseMode.HTML)
         return
 
     update.message.reply_text(text='Bot is waiting for your command...',  parse_mode=telegram.ParseMode.HTML)
